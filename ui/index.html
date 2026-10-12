@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>June · Your day, collected</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <span class="eyebrow">YOUR LOCAL ASSISTANT</span>
+        <h1>June<span>.</span></h1>
+        <p>Your conversations, deadlines and next possibilities.</p>
+      </div>
+      <a
+        class="button"
+        id="talk"
+        href="http://127.0.0.1:18789/"
+        target="_blank"
+        rel="noreferrer"
+        >Talk to June ↗</a
+      >
+    </header>
+    <main>
+      <div id="notice" role="status">Opening your local workspace…</div>
+      <section id="services" class="services"></section>
+      <nav>
+        <a href="/messages" data-viewer="messages">WhatsApp window ↗</a
+        ><a href="/mail" data-viewer="mail">Mail window ↗</a
+        ><a href="#inbox">Inbox</a><a href="#deadlines">Review deadlines</a
+        ><a href="#research">Research & opportunities</a
+        ><a href="#connections">Connections</a>
+      </nav>
+      <section class="two">
+        <div class="panel">
+          <div class="section-head">
+            <h2>One place for what matters</h2>
+            <button id="collect">Check mail</button>
+          </div>
+          <p class="muted">
+            Mail and WhatsApp are read locally. Local Qwen finds candidates; you
+            confirm what becomes a commitment.
+          </p>
+          <div class="row">
+            <button id="process">Process waiting messages</button
+            ><span id="activity" class="muted"></span>
+          </div>
+          <form id="command">
+            <label for="local-command">Priority without an AI request</label>
+            <div class="row">
+              <input
+                id="local-command"
+                placeholder="priority add Professor Sharma"
+                required
+              /><button>Add</button>
+            </div>
+            <small
+              >Also accepts “ignore Coding Club India”. Lists are saved in
+              D:\June\Settings.</small
+            >
+          </form>
+          <p id="rules" class="muted"></p>
+        </div>
+        <div class="panel">
+          <h2>Find your next step</h2>
+          <p>
+            Free finance learning and respected competitions, beginner
+            Electrical/Electronics projects and research, and remote
+            internships.
+          </p>
+          <button id="discover">Prepare opportunity brief</button>
+          <form id="task">
+            <label for="task-title">Prepare resources for a task</label
+            ><input
+              id="task-title"
+              placeholder="Assignment or project name"
+              required
+              maxlength="500"
+            /><textarea
+              id="task-brief"
+              placeholder="What are you trying to learn or build? Add your constraints and deadline."
+              required
+              maxlength="6000"
+            ></textarea
+            ><button>Queue research</button>
+          </form>
+        </div>
+      </section>
+      <section id="deadlines" class="panel">
+        <div class="section-head">
+          <h2>Deadlines & commitments to review</h2>
+          <span class="badge">Evidence first</span>
+        </div>
+        <h3>Tracking</h3>
+        <div id="active"></div>
+        <h3>Awaiting your confirmation</h3>
+        <div id="reviews"></div>
+      </section>
+      <section id="inbox" class="panel">
+        <div class="section-head">
+          <h2>Collected inbox</h2>
+          <span id="inbox-count" class="muted"></span>
+        </div>
+        <div id="messages"></div>
+      </section>
+      <section id="research" class="panel">
+        <h2>Research & opportunity briefs</h2>
+        <p class="muted">
+          Source links and resource notes are also saved in D:\June\Research.
+          Application submission remains your choice.
+        </p>
+        <div id="briefs"></div>
+      </section>
+      <section id="connections" class="panel">
+        <h2>Connect your sources</h2>
+        <p class="muted">
+          Each mailbox needs a one-time authorization for this computer. The
+          Codex Gmail connection is separate from June's background collector.
+        </p>
+        <div id="accounts"></div>
+        <p>
+          <a
+            href="https://myaccount.google.com/apppasswords"
+            target="_blank"
+            rel="noreferrer"
+            >Create a Google app password ↗</a
+          >
+          · Use a 16-character app password, never your normal password. Your institution may restrict this; if so, its administrator must enable an approved
+          connection.
+        </p>
+        <div class="whatsapp">
+          <div>
+            <h3>WhatsApp</h3>
+            <p id="wa-state">Not linked</p>
+            <button id="connect-wa">Link my WhatsApp</button>
+            <p class="muted">
+              Scan with WhatsApp → Settings → Linked devices. June receives new
+              text messages and captions. It does not send messages or mark them
+              read. This uses the community WhatsApp Web connector.
+            </p>
+          </div>
+          <img id="qr" alt="WhatsApp link QR" hidden width="280" height="280" />
+        </div>
+        <hr />
+        <h3>Gemini key pool</h3>
+        <p>
+          Add one key per line to
+          <strong>D:\June\Settings\gemini-api-keys.txt</strong>, then stop and
+          start June. Existing saved Gemini credentials remain available when
+          the file is blank.
+        </p>
+        <p class="muted">
+          Keys in the same Google project share a quota. June uses OpenClaw's
+          bounded retry and key rotation. Failed conversational requests remain
+          recoverable; successful temporary copies are removed.
+        </p>
+        <p id="pending"></p>
+      </section>
+      <footer>
+        June runs on this computer. Use the desktop
+        <strong>Stop June</strong> button to pause services and workflows.
+      </footer>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "june-memory",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Validated local memory engine and automation for June",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "start": "node src/server.js",
+    "test:live": "node scripts/live-smoke.js",
+    "workflows:generate": "node automation/n8n/generate.js",
+    "test:viewer": "node scripts/viewer-smoke.js",
+    "audit:public": "node scripts/audit-public.js"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "7.0.0-rc14",
+    "imapflow": "2.4.0",
+    "mailparser": "3.9.38",
+    "qrcode": "1.5.4"
+  },
+  "devDependencies": {
+    "playwright-core": "1.56.1"
+  }
+}

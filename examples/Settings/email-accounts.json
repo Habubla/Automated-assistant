@@ -1,0 +1,29 @@
+[
+  {
+    "id": "mail-1",
+    "email": "mailbox1@example.test",
+    "host": "imap.gmail.com",
+    "folder": "INBOX",
+    "enabled": false,
+    "appPassword": "",
+    "accessToken": ""
+  },
+  {
+    "id": "mail-2",
+    "email": "mailbox2@example.test",
+    "host": "imap.gmail.com",
+    "folder": "INBOX",
+    "enabled": false,
+    "appPassword": "",
+    "accessToken": ""
+  },
+  {
+    "id": "mail-3",
+    "email": "mailbox3@example.test",
+    "host": "imap.gmail.com",
+    "folder": "INBOX",
+    "enabled": false,
+    "appPassword": "",
+    "accessToken": ""
+  }
+]

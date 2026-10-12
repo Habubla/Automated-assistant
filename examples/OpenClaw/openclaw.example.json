@@ -1,0 +1,16 @@
+{
+  "example": true,
+  "note": "Merge plugin settings into your private OpenClaw configuration; this is not a complete replacement.",
+  "plugins": {
+    "load": {
+      "paths": [
+        "/path/to/June/integrations/openclaw"
+      ]
+    },
+    "entries": {
+      "june-memory-tools": {
+        "enabled": true
+      }
+    }
+  }
+}

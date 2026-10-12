@@ -1,0 +1,10 @@
+{
+  "example": true,
+  "items": [
+    {
+      "title": "Example assignment",
+      "dueAt": null,
+      "status": "example-only"
+    }
+  ]
+}

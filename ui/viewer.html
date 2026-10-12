@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>June Inbox</title>
+    <link rel="stylesheet" href="/viewer.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a href="/" class="brand" aria-label="June dashboard"
+        >June<span>.</span></a
+      ><span class="workspace">YOUR LOCAL WORKSPACE</span>
+      <div class="top-actions">
+        <button id="other-window" class="quiet">Open mail window ↗</button
+        ><a href="/" class="quiet">Dashboard</a>
+      </div>
+    </header>
+    <div id="notice" role="status" aria-live="polite">Opening your inbox…</div>
+    <main class="app">
+      <aside class="sidebar">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow" id="section-kicker">WHATSAPP</p>
+            <h1 id="heading">Messages</h1>
+          </div>
+          <button id="refresh" class="icon-button" aria-label="Refresh inbox">
+            ↻
+          </button>
+        </div>
+        <p class="connection" id="connection">Connecting…</p>
+        <label class="search"
+          ><span aria-hidden="true">⌕</span
+          ><input
+            id="search"
+            type="search"
+            placeholder="Find a person or group"
+            autocomplete="off"
+            aria-label="Search inbox"
+        /></label>
+        <div id="mail-controls" hidden>
+          <label class="sr-only" for="account">Mailbox</label
+          ><select id="account">
+            <option value="">All mailboxes</option>
+          </select>
+          <div class="filters" id="filters" aria-label="Mail filters">
+            <button data-filter="focused" class="selected">Focused</button
+            ><button data-filter="all">All</button
+            ><button data-filter="deadline">Deadlines</button
+            ><button data-filter="opportunity">Opportunities</button
+            ><button data-filter="promotional">Promotions</button>
+          </div>
+        </div>
+        <div class="list-heading">
+          <span id="list-count">Your conversations</span
+          ><span id="list-caption">Recent first</span>
+        </div>
+        <div id="list" class="conversation-list"></div>
+        <button id="more-list" class="more" hidden>Load more</button>
+        <footer class="sidebar-footer">
+          <span class="local-dot"></span>
+          <div>
+            <strong>Private, on this computer</strong
+            ><small>Qwen 3.5 · 4B local assistant</small>
+          </div>
+        </footer>
+      </aside>
+      <section class="detail">
+        <div id="empty" class="empty-state">
+          <div class="empty-mark">J<span>.</span></div>
+          <h2 id="empty-title">A little less noise.</h2>
+          <p id="empty-description">
+            Choose a conversation to read its messages here.
+          </p>
+          <span class="small-note"
+            >Reading your inbox uses no Gemini requests.</span
+          >
+        </div>
+        <div id="opened" hidden>
+          <div class="detail-heading">
+            <div class="detail-title">
+              <span id="detail-kicker" class="eyebrow"></span>
+              <h2 id="detail-name"></h2>
+              <p id="detail-subtitle"></p>
+            </div>
+            <div class="detail-actions">
+              <button id="summary-button" class="accent">
+                Summarize locally</button
+              ><button id="classify-button" class="quiet" hidden>
+                Sort with local AI
+              </button>
+            </div>
+          </div>
+          <div id="local-summary" class="local-summary" hidden>
+            <div class="summary-label">
+              LOCAL AI SUMMARY
+              <button id="dismiss-summary" aria-label="Hide summary">×</button>
+            </div>
+            <p id="summary-text"></p>
+            <small
+              >Check the original messages before acting. Media contents are not
+              read.</small
+            >
+          </div>
+          <div id="message-scroll" class="message-scroll">
+            <button id="older" class="more" hidden>
+              Load earlier messages
+            </button>
+            <div id="messages"></div>
+          </div>
+          <div class="detail-footer" id="detail-footer">
+            Read-only view · Media stays in WhatsApp · No read receipts sent
+          </div>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/viewer.js"></script>
+  </body>
+</html>

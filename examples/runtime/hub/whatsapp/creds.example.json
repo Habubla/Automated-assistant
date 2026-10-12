@@ -1,0 +1,4 @@
+{
+  "example": true,
+  "note": "Linked-device credentials are generated privately by WhatsApp pairing. Never commit actual creds.json or device key files."
+}

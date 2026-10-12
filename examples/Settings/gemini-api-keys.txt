@@ -1,0 +1,3 @@
+# EXAMPLE ONLY
+# Put one actual Gemini key per line in your PRIVATE Settings/gemini-api-keys.txt.
+# No working keys are included.

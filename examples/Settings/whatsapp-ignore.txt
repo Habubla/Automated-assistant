@@ -1,0 +1,2 @@
+# Example ignored groups
+Example Advertising Group

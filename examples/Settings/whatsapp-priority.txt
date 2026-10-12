@@ -1,0 +1,3 @@
+# Example priority names: add your contacts only in the private local copy.
+Example Contact
+Example Project Group

@@ -1,0 +1,39 @@
+{
+  "publicCopy": true,
+  "tests": {
+    "passed": 68,
+    "failed": 0
+  },
+  "privacyAudit": {
+    "passed": true,
+    "checks": [
+      "Actual key-shaped strings",
+      "Non-example email addresses",
+      "User-specific home paths",
+      "Private runtime and database paths",
+      "Disabled example accounts with blank credentials",
+      "Dummy SQLite contents",
+      "Known private identifiers and credential values checked separately"
+    ]
+  },
+  "gitHistory": {
+    "fresh": true,
+    "author": "Repository owner; email configured locally in Git metadata",
+    "originalHistoryIncluded": false
+  },
+  "dummyFiles": {
+    "settings": 5,
+    "databases": 3,
+    "otherExamples": 9,
+    "verificationReports": 9
+  },
+  "excluded": [
+    "Personal messages and email contents",
+    "Personal contact priority and ignore lists",
+    "API keys, passwords and provider tokens",
+    "WhatsApp device credentials and key files",
+    "Native transcript and workflow execution databases",
+    "Personal vault, assignments, research and backups",
+    "Original Git history"
+  ]
+}

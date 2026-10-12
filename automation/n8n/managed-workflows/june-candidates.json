@@ -1,0 +1,272 @@
+{
+  "id": "june-candidates",
+  "name": "01 June memory candidate intake",
+  "active": false,
+  "nodes": [
+    {
+      "id": "7d31eb11c15229da",
+      "name": "Manual test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "76fbabeebb4c5ec9",
+      "name": "Authenticated local webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "june-memory-candidates",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "4d8887d1e6852728",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "june-webhook-header",
+          "name": "June inbound webhook"
+        }
+      }
+    },
+    {
+      "id": "e2132dc3c9eebff1",
+      "name": "Synthetic manual example",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "parameters": {
+        "jsCode": "return [{json:{sessionId:'n8n-synthetic-'+$execution.id,messages:[{role:'user',content:'I prefer written plans.',timestamp:new Date().toISOString()}]}}];"
+      }
+    },
+    {
+      "id": "03aae0fd5d7948cb",
+      "name": "Validate bounded candidate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const b=$json.body??$json;\nconst fail=()=>[{json:{valid:false,ok:false,error:'INVALID_REQUEST',httpStatus:400}}];\nif(!b||typeof b!=='object'||Array.isArray(b)||Object.keys(b).some(k=>!['sessionId','messages'].includes(k)))return fail();\nif(typeof b.sessionId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(b.sessionId)||!Array.isArray(b.messages)||!b.messages.length||b.messages.length>100)return fail();\nlet size=0;for(const m of b.messages){if(!m||Object.keys(m).some(k=>!['role','content','timestamp'].includes(k))||!['user','assistant','system'].includes(m.role)||typeof m.content!=='string'||!m.content.trim()||m.content.length>16000||(size+=m.content.length)>48000||typeof m.timestamp!=='string'||!Number.isFinite(Date.parse(m.timestamp)))return fail();}\nreturn [{json:{valid:true,payload:{sessionId:b.sessionId,messages:b.messages}}}];"
+      }
+    },
+    {
+      "id": "fc9f85b749e58cdb",
+      "name": "Valid request",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "987705f547a7953e",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "e848ead28d1bb017",
+      "name": "Memory engine",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:3210/v1/process",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.payload }}",
+        "options": {
+          "timeout": 240000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "june-memory-worker",
+          "name": "June Memory worker (local)"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "067d20c2036ae1df",
+      "name": "Sanitized result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const raw=$json.body??$json;\nconst status=Number($json.statusCode??(raw.error?503:200));\nconst ok=status>=200&&status<300&&raw.ok!==false&&!raw.error;\nreturn [{json:{ok,httpStatus:ok?200:(status>=400?status:503),status:ok?'completed':'needs-attention',candidates:Array.isArray(raw.observations??raw.result?.observations)?(raw.observations??raw.result.observations).length:0,rejected:Array.isArray(raw.rejectedCandidates??raw.result?.rejectedCandidates)?(raw.rejectedCandidates??raw.result.rejectedCandidates).length:0,notifications:Array.isArray(raw.notifications)?raw.notifications.length:0,dryRun:raw.dryRun??null,checks:Array.isArray(raw.checks)?raw.checks.map(c=>({name:c.name,ok:c.ok,code:c.code??null})):undefined,backupVerified:raw.files!==undefined&&raw.ok===true,sourceStatus:typeof raw.status==='string'?raw.status:null}}];"
+      }
+    },
+    {
+      "id": "dabf7ccd9f12302e",
+      "name": "Respond locally",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1320,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": "={{ $json.httpStatus }}"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual test": {
+      "main": [
+        [
+          {
+            "node": "Synthetic manual example",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Synthetic manual example": {
+      "main": [
+        [
+          {
+            "node": "Validate bounded candidate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authenticated local webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate bounded candidate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate bounded candidate": {
+      "main": [
+        [
+          {
+            "node": "Valid request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid request": {
+      "main": [
+        [
+          {
+            "node": "Memory engine",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond locally",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory engine": {
+      "main": [
+        [
+          {
+            "node": "Sanitized result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sanitized result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sanitized result": {
+      "main": [
+        [
+          {
+            "node": "Respond locally",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Calcutta",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "saveExecutionProgress": false,
+    "executionTimeout": 300
+  },
+  "pinData": {},
+  "tags": []
+}

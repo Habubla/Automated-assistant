@@ -1,0 +1,12 @@
+{
+  "example": true,
+  "provider": "google",
+  "model": "your-configured-model",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Example request only."
+    }
+  ],
+  "status": "example-not-sent"
+}

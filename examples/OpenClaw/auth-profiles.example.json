@@ -1,0 +1,4 @@
+{
+  "example": true,
+  "note": "Configure provider credentials privately using OpenClaw. No real auth profile is included."
+}

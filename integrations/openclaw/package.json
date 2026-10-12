@@ -1,0 +1,17 @@
+{
+  "name": "june-memory-tools",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "peerDependencies": {
+    "openclaw": "2026.9.2"
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.js"
+    ],
+    "compat": {
+      "minGatewayVersion": "2026.9.2"
+    }
+  }
+}

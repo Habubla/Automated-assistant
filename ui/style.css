@@ -1,0 +1,268 @@
+:root {
+  color-scheme: dark;
+  --bg: #0b1019;
+  --panel: #121b29;
+  --text: #eaf0f8;
+  --muted: #9eaec4;
+  --line: #26364c;
+  --mint: #9fe3c5;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font:
+    15px/1.6 "Segoe UI",
+    system-ui,
+    sans-serif;
+}
+header,
+main {
+  max-width: 1240px;
+  margin: auto;
+  padding: 32px;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 46px;
+}
+h1 {
+  font-size: 66px;
+  line-height: 1;
+  margin: 12px 0;
+  letter-spacing: -3px;
+}
+h1 span {
+  color: var(--mint);
+}
+h2 {
+  font-size: 22px;
+  margin: 0 0 14px;
+}
+h3 {
+  margin: 8px 0;
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--mint);
+}
+header p,
+.muted,
+small {
+  color: var(--muted);
+}
+button,
+.button {
+  border: 1px solid #416454;
+  background: #183c32;
+  color: #d7ffec;
+  padding: 10px 16px;
+  border-radius: 9px;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+button:hover,
+.button:hover {
+  background: #245543;
+}
+button.secondary {
+  background: transparent;
+  color: var(--muted);
+  border-color: var(--line);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+a {
+  color: #b5d5fd;
+}
+nav {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin: 25px 0;
+}
+nav a {
+  text-decoration: none;
+  color: var(--muted);
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  padding: 25px;
+  margin: 0 0 24px;
+  min-width: 0;
+}
+.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.section-head,
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.row input {
+  flex: 1;
+  min-width: 0;
+}
+.services {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.service {
+  padding: 13px 17px;
+  background: #111a25;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e7ae6d;
+  margin-right: 10px;
+}
+.dot.ok {
+  background: var(--mint);
+}
+label {
+  display: block;
+  margin: 18px 0 8px;
+  font-weight: 600;
+}
+input,
+textarea {
+  width: 100%;
+  background: #0c1421;
+  border: 1px solid #314358;
+  border-radius: 8px;
+  padding: 11px;
+  color: var(--text);
+  font: inherit;
+}
+textarea {
+  min-height: 85px;
+  resize: vertical;
+  margin: 10px 0;
+}
+form small {
+  display: block;
+  margin-top: 8px;
+}
+.badge {
+  font-size: 12px;
+  color: var(--mint);
+  border: 1px solid #365448;
+  border-radius: 30px;
+  padding: 3px 10px;
+}
+.item {
+  border-top: 1px solid var(--line);
+  padding: 18px 0;
+  overflow-wrap: anywhere;
+}
+.item:first-child {
+  border-top: 0;
+}
+.item p {
+  margin: 6px 0;
+}
+.item .meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+.item summary {
+  cursor: pointer;
+}
+.quote {
+  border-left: 2px solid #52796c;
+  padding-left: 14px;
+  color: var(--muted);
+}
+.account {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr auto;
+  gap: 12px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding: 16px 0;
+}
+.account small {
+  display: block;
+}
+.whatsapp {
+  display: flex;
+  gap: 36px;
+  align-items: center;
+  margin-top: 32px;
+}
+.whatsapp img {
+  border-radius: 12px;
+}
+.whatsapp div {
+  flex: 1;
+}
+.report {
+  white-space: pre-wrap;
+  line-height: 1.8;
+}
+.empty {
+  padding: 18px 0;
+  color: var(--muted);
+}
+#notice {
+  border-left: 3px solid var(--mint);
+  padding: 10px 15px;
+  background: #11241f;
+  margin-bottom: 20px;
+}
+footer {
+  color: var(--muted);
+  padding: 18px 0 40px;
+}
+hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 30px 0;
+}
+@media (max-width: 800px) {
+  header,
+  main {
+    padding: 22px;
+  }
+  .two {
+    grid-template-columns: 1fr;
+  }
+  .services {
+    grid-template-columns: 1fr 1fr;
+  }
+  .account {
+    grid-template-columns: 1fr;
+  }
+  .whatsapp {
+    flex-direction: column;
+  }
+  .section-head {
+    align-items: start;
+    flex-wrap: wrap;
+  }
+  h1 {
+    font-size: 54px;
+  }
+}

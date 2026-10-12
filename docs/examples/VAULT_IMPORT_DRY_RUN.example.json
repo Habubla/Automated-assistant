@@ -1,0 +1,6 @@
+{
+  "example": true,
+  "containsPersonalData": false,
+  "status": "not-run",
+  "note": "Dummy report. Generate actual verification reports locally and keep them outside Git."
+}

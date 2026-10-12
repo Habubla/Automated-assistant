@@ -1,0 +1,164 @@
+{
+  "id": "june-collect",
+  "name": "06 June collect mailboxes",
+  "active": false,
+  "nodes": [
+    {
+      "id": "7d31eb11c15229da",
+      "name": "Manual test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "6e0887d8bed547a5",
+      "name": "Local schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/5 * * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "0fd8c51011fba9cb",
+      "name": "Job configuration",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "jsCode": "return [{json:{payload:{}}}];"
+      }
+    },
+    {
+      "id": "e848ead28d1bb017",
+      "name": "Memory engine",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:3211/v1/jobs/collect",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.payload }}",
+        "options": {
+          "timeout": 240000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "june-memory-worker",
+          "name": "June Memory worker (local)"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "067d20c2036ae1df",
+      "name": "Sanitized result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const raw=$json.body??$json;\nconst status=Number($json.statusCode??(raw.error?503:200));\nconst ok=status>=200&&status<300&&raw.ok!==false&&!raw.error;\nreturn [{json:{ok,httpStatus:ok?200:(status>=400?status:503),status:ok?'completed':'needs-attention',candidates:Array.isArray(raw.observations??raw.result?.observations)?(raw.observations??raw.result.observations).length:0,rejected:Array.isArray(raw.rejectedCandidates??raw.result?.rejectedCandidates)?(raw.rejectedCandidates??raw.result.rejectedCandidates).length:0,notifications:Array.isArray(raw.notifications)?raw.notifications.length:0,dryRun:raw.dryRun??null,checks:Array.isArray(raw.checks)?raw.checks.map(c=>({name:c.name,ok:c.ok,code:c.code??null})):undefined,backupVerified:raw.files!==undefined&&raw.ok===true,sourceStatus:typeof raw.status==='string'?raw.status:null}}];"
+      }
+    }
+  ],
+  "connections": {
+    "Manual test": {
+      "main": [
+        [
+          {
+            "node": "Job configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Local schedule": {
+      "main": [
+        [
+          {
+            "node": "Job configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job configuration": {
+      "main": [
+        [
+          {
+            "node": "Memory engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory engine": {
+      "main": [
+        [
+          {
+            "node": "Sanitized result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sanitized result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Calcutta",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "saveExecutionProgress": false,
+    "executionTimeout": 300
+  },
+  "pinData": {},
+  "tags": []
+}
