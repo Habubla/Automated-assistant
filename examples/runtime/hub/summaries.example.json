@@ -1,0 +1,18 @@
+{
+  "example": true,
+  "note": "Fictional summary job row. message_ids and parts are JSON-encoded strings in the actual table.",
+  "jobs": [
+    {
+      "id": "SUM-00000000000000000000000000000000",
+      "scope": "all-unread",
+      "message_ids": "[\"INBOX-EXAMPLE\"]",
+      "status": "complete",
+      "parts": "[\"Example Contact requests an example circuit report. Review the source date before relying on it.\"]",
+      "total_parts": 1,
+      "error": null,
+      "next_attempt": 0,
+      "created_at": "2030-01-10T06:30:00.000Z",
+      "updated_at": "2030-01-10T06:30:00.000Z"
+    }
+  ]
+}

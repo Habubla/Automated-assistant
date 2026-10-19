@@ -43,7 +43,7 @@ export class MemoryClient {
     }
   }
 }
-export function runOpenClaw({ entry, args, timeoutMs = 60000 }) {
+export function runOpenClaw({ entry, args, timeoutMs = 150000 }) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [entry, ...args], {
       windowsHide: true,
@@ -130,8 +130,10 @@ export class JuneConversation {
         "--message",
         text + context,
         "--json",
+        "--thinking",
+        "low",
         "--timeout",
-        "45",
+        "120",
       ],
     });
     const response = result.result ?? result;

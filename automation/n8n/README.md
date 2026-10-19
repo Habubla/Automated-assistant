@@ -6,7 +6,7 @@ n8n 2.42.6 is installed locally in runtime/; it requires Node >=24.0.0 (host v24
 
 scripts/prepare-local.ps1 has imported two encrypted n8n credentials and all five inactive workflows into runtime/user. It creates private generated credentials through scripts/local-settings.ps1. It does not expose the reviewer credential to n8n. The temporary plaintext credential import file is removed after success.
 
-Start the memory API with ../../scripts/start-memory.ps1, then n8n with ./start-local.ps1, each manually in its own terminal. n8n listens on 127.0.0.1:5678; its runner broker also binds loopback. Visit http://127.0.0.1:5678 and complete the local owner-account setup if prompted. No account password was invented.
+Start the memory API with ../../scripts/start-memory.ps1, then n8n with ./start-local.ps1, each manually in its own terminal. June's n8n listens on 127.0.0.1:5680; its runner broker binds loopback on 5681. Visit http://127.0.0.1:5680 and complete the local owner-account setup if prompted. No account password was invented. The dedicated port avoids the separate Docker n8n installation on 5678.
 
 ## Workflows
 

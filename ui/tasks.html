@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>June · Tasks & opportunities</title>
+    <link rel="stylesheet" href="/tasks.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="/">June<span>.</span></a>
+      <nav>
+        <a href="/messages">Messages</a><a href="/mail">Mail</a
+        ><a href="/">Dashboard</a>
+      </nav>
+    </header>
+    <main>
+      <p class="eyebrow">A LITTLE SPACE TO PLAN</p>
+      <h1>What’s next.</h1>
+      <p class="intro">
+        Your deadlines, prepared briefs and new possibilities.
+      </p>
+      <p id="notice" role="status">Opening your workspace…</p>
+      <div class="tabs">
+        <button id="tab-tasks" class="selected">Tasks & deadlines</button
+        ><button id="tab-opps">Opportunities</button
+        ><button id="refresh">Refresh</button>
+      </div>
+      <section id="task-section">
+        <div class="toolbar">
+          <input
+            id="search"
+            type="search"
+            placeholder="Find a task"
+            aria-label="Search tasks"
+          /><label
+            ><input id="show-all" type="checkbox" /> Include completed &
+            dismissed</label
+          ><button id="add-toggle">+ Add reminder</button>
+        </div>
+        <form id="add-form" hidden>
+          <label>Task<input id="new-title" required maxlength="180" /></label
+          ><label
+            >Due date and time (IST)<input
+              id="new-due"
+              type="datetime-local"
+              required /></label
+          ><label>Notes<textarea id="new-notes"></textarea></label
+          ><button type="submit">Save task & reminders</button>
+        </form>
+        <p class="help">
+          Reminders: 24 hours before, 1 hour before, and when due. Detected
+          tasks need your review. Date-only messages use 11:59 pm IST until you
+          set a time.
+        </p>
+        <div id="notifications" class="notifications"></div>
+        <div class="layout">
+          <aside id="task-list"></aside>
+          <article id="detail">
+            <h2>Select a task</h2>
+            <p>
+              Its brief is prepared as soon as June detects it. No model request
+              is needed when you open it.
+            </p>
+          </article>
+        </div>
+      </section>
+      <section id="opportunity-section" hidden>
+        <div class="panel">
+          <h2>Find your next step</h2>
+          <p id="connection"></p>
+          <p id="scan-status"></p>
+          <p id="pool-status"></p>
+          <div class="toolbar">
+            <button id="scan">Scan now</button
+            ><a
+              href="https://www.linkedin.com/mypreferences/d/categories/notifications"
+              target="_blank"
+              rel="noreferrer"
+              >Set up LinkedIn email alerts ↗</a
+            ><a
+              href="https://www.linkedin.com/jobs/"
+              target="_blank"
+              rel="noreferrer"
+              >Open LinkedIn ↗</a
+            >
+          </div>
+          <p class="help">
+            LinkedIn alerts arriving in your connected mailbox are collected
+            every 5 minutes. Public research runs at 09:00 and 18:00 IST while
+            June is running, with catch-up after startup. No applications or
+            messages are sent.
+          </p>
+        </div>
+        <div id="opportunities"></div>
+      </section>
+    </main>
+    <script type="module" src="/tasks.js"></script>
+  </body>
+</html>

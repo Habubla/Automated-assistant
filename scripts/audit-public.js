@@ -5,7 +5,7 @@ const root=path.resolve(import.meta.dirname,"..");
 const failures=[];
 const skip=new Set([".git","node_modules","coverage",".git-hooks"]);
 const email=/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
-const protocolExamples=new Set(["111@s.whatsapp.net","222@s.whatsapp.net","teacher@s.whatsapp.net","lab@g.us","dev@s.whatsapp.net","project@g.us","%@g.us","group@g.us"]);
+const protocolExamples=new Set(["111@s.whatsapp.net","222@s.whatsapp.net","teacher@s.whatsapp.net","lab@g.us","dev@s.whatsapp.net","project@g.us","%@g.us","group@g.us","fixture@g.us"]);
 const keyPatterns=[/\bAIza[A-Za-z0-9_-]{30,}\b/,/\bAQ\.[A-Za-z0-9_-]{25,}\b/,/\bya29\.[A-Za-z0-9._-]{30,}\b/,/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/];
 let files=0;
 function scan(dir){
@@ -18,6 +18,7 @@ function scan(dir){
    scan(abs);continue;
   }
   files++;
+  if(/\.pdf$/i.test(rel))failures.push(rel+": generated PDF excluded from public export");
   if(/(?:^|\/)(?:creds|service-secrets|access|auth-profiles)\.json$|\.sqlite(?:-|$)|\.db(?:-|$)|\.log$|\.(?:pem|key|p12|pfx)$|(?:^|\/)\.env(?:\.|$)/.test(rel)&&!rel.endsWith(".example.sqlite")&&rel!==".env.example")failures.push(rel+": private file type");
   const bytes=fs.readFileSync(abs);
   let text=bytes.toString("utf8");
@@ -26,7 +27,9 @@ function scan(dir){
   if(/(?:C:[\\/]+Users[\\/]+)[^\\/\s"'<>]+/i.test(text))failures.push(rel+": user-specific home path");
   for(const match of text.matchAll(email)){
    const domain=match[0].split("@")[1].toLowerCase();
-   if(!["example.test","example.com","example.org","example.net"].includes(domain)&&!protocolExamples.has(match[0]))failures.push(rel+": non-example email address");
+   // The provider sender is a fixed synthetic alert fixture, also named here.
+   const syntheticAlert=["test/tasks-summaries.test.js","scripts/audit-public.js"].includes(rel)&&match[0]==="jobs-noreply@linkedin.com";
+   if(!["example.test","example.com","example.org","example.net"].includes(domain)&&!protocolExamples.has(match[0])&&!syntheticAlert)failures.push(rel+": non-example email address");
   }
   if(rel.endsWith(".example.sqlite")){
    const db=new DatabaseSync(abs,{readOnly:true});

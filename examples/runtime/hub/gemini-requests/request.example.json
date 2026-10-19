@@ -1,0 +1,20 @@
+{
+  "example": true,
+  "id": "example-request",
+  "model": "your-configured-model",
+  "payload": {
+    "contents": [
+      {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Fictional public-resource request."
+          }
+        ]
+      }
+    ]
+  },
+  "createdAt": "2030-01-10T06:30:00.000Z",
+  "status": "waiting",
+  "reason": "GEMINI_QUOTA_EXHAUSTED"
+}

@@ -3,6 +3,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { localCommand } from "../../src/hub/settings.js";
 import { redactSensitiveText } from "../../src/util.js";
+import { refreshGatewayKeys } from "../../src/hub/gemini-pool.js";
 
 const hash = (value) =>
   createHash("sha256").update(String(value)).digest("hex");
@@ -15,6 +16,16 @@ export function registerJuneLifecycle(
   const root =
     env.JUNE_PENDING_ROOT ?? "D:/June/JuneMemory/.local/gemini-pending";
   const settings = env.JUNE_SETTINGS_ROOT ?? "D:/June/Settings";
+  const reloadKeys = () => {
+    try {
+      return refreshGatewayKeys(settings, env);
+    } catch {
+      api.logger?.warn(
+        "June key-pool file could not be read; existing gateway keys retained.",
+      );
+    }
+  };
+  reloadKeys();
   const pending = (id) => path.join(root, hash(id) + ".json");
   const inFlight = new Map();
   api.registerCommand({
@@ -55,6 +66,7 @@ export function registerJuneLifecycle(
   });
   api.on("llm_input", (event, ctx) => {
     if (event.provider !== "google" || !event.runId) return;
+    reloadKeys();
     const previous = inFlight.get(event.runId);
     const record = {
       runId: event.runId,

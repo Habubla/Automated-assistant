@@ -1,0 +1,24 @@
+{
+  "example": true,
+  "note": "Fictional research lead, not a real opportunity or verified listing.",
+  "opportunities": [
+    {
+      "id": "OPP-00000000000000000000000000000000",
+      "source": "Example public research",
+      "title": "Example free learning resource",
+      "brief": "Fictional lead. Verify availability, fees, eligibility and deadline on the original source.",
+      "url": "https://example.test/learning",
+      "created_at": "2030-01-10T06:30:00.000Z",
+      "status": "new"
+    }
+  ],
+  "opportunityScan": {
+    "status": "ready",
+    "completedSlot": "2030-01-10-09",
+    "lastSuccess": "2030-01-10T06:30:00.000Z",
+    "sources": 1,
+    "checksFailed": 1,
+    "route": "Example only",
+    "nextAttempt": 0
+  }
+}

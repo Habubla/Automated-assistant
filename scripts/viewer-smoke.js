@@ -6,11 +6,13 @@ import { once } from "node:events";
 import assert from "node:assert/strict";
 import { chromium } from "playwright-core";
 import { HubStore } from "../src/hub/store.js";
+import { TaskBoard } from "../src/hub/tasks.js";
 const project = path.resolve(import.meta.dirname, ".."),
   root = await fs.mkdtemp(path.join(os.tmpdir(), "june-viewer-ui-"));
 let child, browser;
 try {
   const store = new HubStore(root);
+  store.set("unreadSince", "2026-10-12T00:00:00+05:30");
   await fs.writeFile(
     path.join(root, "email-accounts.json"),
     JSON.stringify([
@@ -119,6 +121,8 @@ try {
     promotional: true,
     receivedAt: "2026-10-12T09:00:00+05:30",
   });
+  const taskBoard = new TaskBoard(store);
+  taskBoard.scan();
   store.close();
   const port = 33342,
     origin = "http://127.0.0.1:" + port;
@@ -132,6 +136,7 @@ try {
       JUNE_SETTINGS_ROOT: root,
       JUNE_WORKER_TOKEN: "synthetic-worker",
       JUNE_REVIEW_TOKEN: "synthetic-review",
+      JUNE_BACKGROUND_DISABLED: "1",
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -202,7 +207,7 @@ try {
     }),
   );
   await page
-    .getByRole("button", { name: "Summarize locally", exact: true })
+    .getByRole("button", { name: "Summarize unread", exact: true })
     .click();
   await page.locator("#local-summary:not([hidden])").waitFor();
   const output = path.join(project, ".local");
@@ -211,6 +216,18 @@ try {
     path: path.join(output, "viewer-messages.png"),
     fullPage: true,
   });
+  await page.unroute("**/api/inbox/summarize");
+  const queued = await context.request.post(origin + "/api/inbox/summarize", {
+    headers: { "x-june-action": "1" },
+    data: { allUnread: true },
+  });
+  assert.equal(queued.status(), 202);
+  const queuedJob = await queued.json();
+  assert.equal(queuedJob.messages, 4);
+  const jobState = await context.request.get(
+    origin + "/api/inbox/summary?id=" + queuedJob.id,
+  );
+  assert.equal((await jobState.json()).status, "queued");
   const mailPage = await context.newPage();
   mailPage.on("pageerror", (e) => errors.push(e.message));
   await mailPage.goto(origin + "/mail");
@@ -251,6 +268,61 @@ try {
     false,
   );
   assert.deepEqual(errors, []);
+  const taskPage = await context.newPage();
+  taskPage.on("pageerror", (e) => errors.push(e.message));
+  await taskPage.goto(origin + "/tasks");
+  await taskPage.locator(".task").first().waitFor();
+  await taskPage.locator(".task").first().click();
+  await taskPage.getByRole("heading", { name: "Prepared brief" }).waitFor();
+  assert.match(
+    await taskPage.locator("#detail").innerText(),
+    /report|measurements/,
+  );
+  await taskPage
+    .getByRole("button", { name: "+ Add reminder", exact: true })
+    .click();
+  await taskPage.locator("#new-title").fill("Synthetic oscilloscope revision");
+  await taskPage.locator("#new-due").fill("2026-10-22T17:00");
+  await taskPage
+    .locator("#new-notes")
+    .fill("Review the RC cutoff formula and plot Bode response.");
+  await taskPage
+    .getByRole("button", { name: "Save task & reminders", exact: true })
+    .click();
+  await taskPage
+    .locator("#detail h2")
+    .filter({ hasText: "Synthetic oscilloscope revision" })
+    .waitFor();
+  await taskPage
+    .getByRole("button", { name: "Snooze 1 hour", exact: true })
+    .click();
+  await taskPage.screenshot({
+    path: path.join(output, "tasks-synthetic.png"),
+    fullPage: true,
+  });
+  await taskPage.getByRole("button", { name: "Complete", exact: true }).click();
+  await taskPage.waitForFunction(
+    () =>
+      !document
+        .querySelector("#task-list")
+        .textContent.includes("Synthetic oscilloscope revision"),
+  );
+  await taskPage
+    .getByRole("button", { name: "Opportunities", exact: true })
+    .click();
+  await taskPage.waitForFunction(() =>
+    document
+      .querySelector("#connection")
+      .textContent.includes("cannot read your feed"),
+  );
+  await taskPage.setViewportSize({ width: 390, height: 844 });
+  assert.equal(
+    await taskPage.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+    false,
+  );
+  assert.deepEqual(errors, []);
   console.log(
     JSON.stringify({
       ok: true,
@@ -261,6 +333,11 @@ try {
       separateMailWindow: true,
       filters: true,
       summaryButton: true,
+      taskBrief: true,
+      manualReminder: true,
+      snooze: true,
+      taskCompletion: true,
+      opportunityStatus: true,
       mobileOverflow: false,
       browserErrors: errors.length,
     }),

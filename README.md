@@ -13,9 +13,9 @@ npm ci --ignore-scripts
 npm test
 ```
 
-Install and configure optional runtimes separately before using the desktop launchers. The Windows service scripts use D:/June data-directory defaults; review those paths for your own installation. No startup tasks or desktop shortcuts are registered by cloning this repository. Tests use isolated synthetic fixtures.
+Install and configure optional runtimes separately before using the desktop launchers. The Windows service scripts use D:/June data-directory defaults; review those paths for your own installation. No startup tasks or desktop shortcuts are registered by cloning this repository. Tests use synthetic fixtures. Set JUNE_BACKGROUND_DISABLED=1 when running tests to suppress background research.
 
-Qwen 3.5 4B supplies local summaries, email categories and pending memory candidates. Human confirmation is required before candidates become trusted deadlines or profile facts. The mail collector is read-only. WhatsApp media is labelled without downloading its contents; the viewer displays collected messages rather than full historical account sync.
+Qwen 3.5 4B supplies local summaries, email categories and pending memory candidates. Human confirmation is required before JuneMemory candidates become trusted records within that engine. The separate task board contains detected requests that need review. The mail collector is read-only. WhatsApp media is labelled without downloading its contents; the viewer displays collected messages rather than full historical account sync.
 
 ## Dummy counterparts for private files
 
@@ -44,3 +44,7 @@ This folder has fresh Git history using the repository owner's contribution iden
 Before every later publication, review staged files and run npm run audit:public. The audit rejects sensitive runtime paths, actual key-shaped strings, enabled example accounts, nonblank example credentials, non-example email addresses and example files replaced with real data.
 
 The publication bundle intentionally does not include generated deployment evidence from a personal machine. Examples under docs/examples are dummy report shapes, not claimed runtime verification results.
+
+## Current feature export
+
+This version includes durable all-unread summary jobs, deadline detection and prepared source briefs, reminders, the Windows task widget, Gemini pool retry handling, LinkedIn email alerts and scheduled public research leads. See [Inbox and tasks](docs/INBOX_TASKS.md) and [Desktop startup](docs/DESKTOP_STARTUP.md). Fictional state samples are listed in [the public file map](docs/PUBLIC_FILE_MAP.md). Generated workflow/audit PDFs are excluded.

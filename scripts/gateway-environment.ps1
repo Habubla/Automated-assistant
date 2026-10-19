@@ -1,17 +1,18 @@
 $ErrorActionPreference='Stop'
-$settings='D:\June\Settings'
-$credentialFile='D:\June\JuneMemory\.local\service-secrets.json'
+$project=Split-Path -Parent $PSScriptRoot
+$settings=if($env:JUNE_SETTINGS_ROOT){$env:JUNE_SETTINGS_ROOT}else{'D:\June\Settings'}
+$credentialFile=Join-Path $project '.local\service-secrets.json'
 $private=Get-Content -LiteralPath $credentialFile -Raw | ConvertFrom-Json
 $env:JUNE_READER_TOKEN=$private.reader
 $env:JUNE_WORKER_TOKEN=$private.worker
 $env:JUNE_SETTINGS_ROOT=$settings
-$env:JUNE_PENDING_ROOT='D:\June\JuneMemory\.local\gemini-pending'
+$env:JUNE_PENDING_ROOT=Join-Path $project '.local\gemini-pending'
 $poolFile=Join-Path $settings 'gemini-api-keys.txt'
 if(Test-Path -LiteralPath $poolFile){
  $keys=@(Get-Content -LiteralPath $poolFile | ForEach-Object {$_.Trim()} | Where-Object {$_ -and -not $_.StartsWith('#')})
  $valid=@($keys | Where-Object {$_ -match '^[A-Za-z0-9_.-]{20,256}$'} | Select-Object -Unique)
  if($valid.Count -ne $keys.Count){Write-Warning 'Some key-pool lines were duplicate or invalid and were skipped.'}
- if($valid.Count){$env:GEMINI_API_KEYS=$valid -join ','}
+ if($valid.Count){$env:GEMINI_API_KEYS=$valid -join ',';$env:GEMINI_API_KEY=$valid[0]}
 }
 $env:OPENCLAW_GATEWAY_PORT='18789'
 $env:OPENCLAW_WINDOWS_TASK_NAME='OpenClaw Gateway'

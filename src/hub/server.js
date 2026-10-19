@@ -9,6 +9,11 @@ import { loadRules, readAccounts, localCommand } from "./settings.js";
 import { HubJobs } from "./jobs.js";
 import { LocalInboxModel } from "./local-inbox-model.js";
 import { WhatsAppReader } from "./whatsapp.js";
+import { SummaryJobs } from "./summary-jobs.js";
+import { TaskBoard } from "./tasks.js";
+import { GeminiPool } from "./gemini-pool.js";
+import { Opportunities } from "./opportunities.js";
+import { publicResearch } from "./public-research.js";
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../..",
@@ -42,6 +47,15 @@ export async function startHub(env = process.env) {
     { mode: 0o600 },
   );
   const inboxModel = new LocalInboxModel();
+  const summaries = new SummaryJobs(store, inboxModel);
+  const tasks = new TaskBoard(store);
+  const pool = new GeminiPool({
+    settings,
+    pendingRoot: path.join(state, "gemini-requests"),
+  });
+  const opportunities = new Opportunities(store, pool, {
+    research: publicResearch,
+  });
   const jobs = new HubJobs({
     inboxModel,
     store,
@@ -113,6 +127,9 @@ export async function startHub(env = process.env) {
         "/mail": "viewer.html",
         "/viewer.js": "viewer.js",
         "/viewer.css": "viewer.css",
+        "/tasks": "tasks.html",
+        "/tasks.js": "tasks.js",
+        "/tasks.css": "tasks.css",
       };
       if (req.method === "GET" && Object.hasOwn(staticFiles, u.pathname)) {
         const ext = path.extname(staticFiles[u.pathname]);
@@ -174,6 +191,29 @@ export async function startHub(env = process.env) {
         return send(res, 200, await jobs[job]());
       }
       if (!user) return send(res, 403, { error: "LOCAL_OWNER_REQUIRED" });
+      if (req.method === "GET" && u.pathname === "/api/tasks")
+        return send(res, 200, {
+          ok: true,
+          tasks: tasks.list(Object.fromEntries(u.searchParams)),
+          notifications: tasks.notifications(),
+        });
+      if (req.method === "GET" && u.pathname === "/api/tasks/item")
+        return send(res, 200, {
+          ok: true,
+          task: tasks.get(u.searchParams.get("id")),
+        });
+      if (req.method === "GET" && u.pathname === "/api/inbox/summary")
+        return send(res, 200, {
+          ok: true,
+          ...summaries.get(u.searchParams.get("id")),
+        });
+      if (req.method === "GET" && u.pathname === "/api/opportunities")
+        return send(res, 200, {
+          ok: true,
+          items: opportunities.list(),
+          connection: opportunities.state(),
+          pool: pool.status(),
+        });
       if (req.method === "GET" && u.pathname === "/api/inbox/status")
         return send(res, 200, {
           ok: true,
@@ -192,6 +232,7 @@ export async function startHub(env = process.env) {
             )
             .all(),
           model: "qwen3.5:4b",
+          unreadSince: store.get("unreadSince"),
           modelBusy: inboxModel.busy,
         });
       if (req.method === "GET" && u.pathname === "/api/inbox/chats")
@@ -239,7 +280,7 @@ export async function startHub(env = process.env) {
             ["Gateway", "http://127.0.0.1:18789/readyz"],
             ["Local model", "http://127.0.0.1:11434/api/tags"],
             ["Memory", "http://127.0.0.1:3210/healthz"],
-            ["Workflows", "http://127.0.0.1:5678/healthz"],
+            ["Workflows", "http://127.0.0.1:5680/healthz/readiness"],
           ].map(async ([name, url]) => {
             try {
               const r = await fetch(url, { signal: AbortSignal.timeout(1500) });
@@ -283,14 +324,35 @@ export async function startHub(env = process.env) {
       if (req.method !== "POST") return send(res, 404, { error: "NOT_FOUND" });
       const b = await readBody(req);
       if (u.pathname === "/api/inbox/summarize") {
-        const rows = b.threadId
-          ? store.thread(b.threadId, { limit: 20 }).items
-          : [store.inboxItem(b.id)].filter(Boolean);
-        if (!rows.length) throw Error("MESSAGE_NOT_FOUND");
-        return send(res, 200, {
-          ok: true,
-          ...(await inboxModel.summarize(rows)),
-        });
+        return send(res, 202, { ok: true, ...summaries.start(b) });
+      }
+      if (u.pathname === "/api/inbox/summary-read")
+        return send(res, 200, summaries.acknowledge(b.id));
+      if (u.pathname === "/api/inbox/mark-read") {
+        if (
+          !/^CHAT-[a-f0-9]{32}$/.test(b.threadId ?? "") ||
+          !Array.isArray(b.ids) ||
+          b.ids.length > 100
+        )
+          throw Error("INVALID_READ_SELECTION");
+        const update = store.db.prepare(
+          "UPDATE inbox SET june_read_at=? WHERE id=? AND thread_id=? AND source='whatsapp'",
+        );
+        for (const id of b.ids)
+          update.run(new Date().toISOString(), id, b.threadId);
+        return send(res, 200, { ok: true });
+      }
+      if (u.pathname === "/api/tasks/add")
+        return send(res, 200, { ok: true, task: tasks.add(b) });
+      if (u.pathname === "/api/tasks/update")
+        return send(res, 200, { ok: true, task: tasks.update(b.id, b) });
+      if (u.pathname === "/api/tasks/reminder") {
+        tasks.acknowledge(b.id, b.delivered === true);
+        return send(res, 200, { ok: true });
+      }
+      if (u.pathname === "/api/opportunities/scan") {
+        void opportunities.scan({ force: true });
+        return send(res, 202, { ok: true, status: "queued" });
       }
       if (u.pathname === "/api/inbox/classify") {
         const row = store.inboxItem(b.id);
@@ -423,6 +485,7 @@ export async function startHub(env = process.env) {
     if (stopping) return;
     stopping = true;
     jobs.paused = true;
+    clearInterval(backgroundTimer);
     whatsapp.stop();
     server.close(() => {
       store.close();
@@ -436,6 +499,28 @@ export async function startHub(env = process.env) {
     server.once("error", reject);
     server.listen(port, "127.0.0.1", resolve);
   });
+  // App-owned routines run whenever June is running, including Windows sign-in.
+  // Persistent snapshots/checkpoints make interrupted work resumable.
+  const backgroundTick = () => {
+    if (jobs.paused || env.JUNE_BACKGROUND_DISABLED === "1") return;
+    try {
+      tasks.scan(500);
+      tasks.reminders();
+      opportunities.collectAlerts();
+    } catch {
+      store.set("backgroundError", "TASK_SCAN_FAILED");
+    }
+    void summaries
+      .tick()
+      .catch(() => store.set("backgroundError", "SUMMARY_FAILED"));
+    void opportunities
+      .scan()
+      .catch(() => store.set("backgroundError", "OPPORTUNITY_SCAN_FAILED"));
+  };
+  const backgroundTimer = setInterval(backgroundTick, 10000);
+  backgroundTimer.unref();
+  if (env.JUNE_BACKGROUND_DISABLED !== "1")
+    setTimeout(backgroundTick, 3000).unref();
   if (store.get("whatsappEnabled", false))
     whatsapp
       .start()

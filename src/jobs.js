@@ -41,7 +41,7 @@ export class Jobs {
     this.services = {
       openclaw: "http://127.0.0.1:18789",
       ollama: "http://127.0.0.1:11434",
-      n8n: "http://127.0.0.1:5678",
+      n8n: "http://127.0.0.1:5680",
       ...services,
     };
     for (const v of Object.values(this.services)) localUrl(v);
@@ -152,7 +152,7 @@ export class Jobs {
           name === "ollama"
             ? "/api/tags"
             : name === "n8n"
-              ? "/healthz"
+              ? "/healthz/readiness"
               : "/healthz";
         try {
           const response = await this.fetch(origin + endpoint, {

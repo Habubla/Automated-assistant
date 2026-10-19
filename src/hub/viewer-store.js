@@ -96,14 +96,15 @@ export const viewerMethods = {
    SELECT i.*,coalesce(nullif(c.name,''),nullif(i.chat_name,''),CASE WHEN i.chat_id LIKE '%@g.us' THEN 'WhatsApp group' ELSE coalesce(nullif(i.sender_name,''),i.sender,i.chat_id) END) AS display_name,
    row_number() OVER(PARTITION BY i.thread_id ORDER BY i.received_at DESC,i.id DESC) AS rn,
    count(*) OVER(PARTITION BY i.thread_id) AS message_count,
+   sum(CASE WHEN i.direction='incoming' AND i.june_read_at IS NULL AND i.received_at>=? THEN 1 ELSE 0 END) OVER(PARTITION BY i.thread_id) AS unread_count,
    max(i.priority) OVER(PARTITION BY i.thread_id) AS thread_priority
    FROM inbox i LEFT JOIN contacts c ON c.id=i.chat_id WHERE i.source='whatsapp')
-   SELECT thread_id,chat_id,display_name,message_count,thread_priority,received_at,body AS preview,attachments_json
+   SELECT thread_id,chat_id,display_name,message_count,unread_count,thread_priority,received_at,body AS preview,attachments_json
    FROM ranked WHERE rn=1 AND (display_name LIKE ? ESCAPE '\\' OR chat_id LIKE ? ESCAPE '\\')
    ORDER BY thread_priority DESC,received_at DESC,thread_id LIMIT ? OFFSET ?`;
     const rows = this.db
       .prepare(query)
-      .all(like(q), like(q), limit + 1, offset);
+      .all(this.get("unreadSince"), like(q), like(q), limit + 1, offset);
     return {
       items: rows.slice(0, limit).map(({ attachments_json, ...r }) => ({
         ...r,

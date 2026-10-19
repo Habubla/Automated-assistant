@@ -157,10 +157,30 @@ test("hub isolates owner actions from worker credentials and rejects foreign ori
     ).status,
     200,
   );
-  for(const route of ["/api/inbox/chats","/api/inbox/mail","/api/inbox/status"]){
-    assert.equal((await fetch(origin+route)).status,401);
-    assert.equal((await fetch(origin+route,{headers:{authorization:"Bearer synthetic-worker"}})).status,403);
-    assert.equal((await fetch(origin+route,{headers:{cookie:"june_session="+token}})).status,200);
+  for (const route of [
+    "/api/inbox/chats",
+    "/api/inbox/mail",
+    "/api/inbox/status",
+    "/api/tasks",
+    "/api/opportunities",
+  ]) {
+    assert.equal((await fetch(origin + route)).status, 401);
+    assert.equal(
+      (
+        await fetch(origin + route, {
+          headers: { authorization: "Bearer synthetic-worker" },
+        })
+      ).status,
+      403,
+    );
+    assert.equal(
+      (
+        await fetch(origin + route, {
+          headers: { cookie: "june_session=" + token },
+        })
+      ).status,
+      200,
+    );
   }
   assert.equal(
     await fs.readFile(path.join(root, "whatsapp-priority.txt"), "utf8"),

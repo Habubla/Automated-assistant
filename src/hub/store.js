@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { redactSensitiveText } from "../util.js";
+import { initializeSummaries } from "./summary-jobs.js";
 import {
   initializeViewer,
   attachments,
@@ -32,6 +33,7 @@ export class HubStore {
       CREATE INDEX IF NOT EXISTS inbox_queue ON inbox(status,next_attempt);
     `);
     initializeViewer(this);
+    initializeSummaries(this);
     this.db.exec(
       "UPDATE inbox SET status='retry' WHERE status='running'; UPDATE research SET status='needs-review',error='Interrupted research; review before retry' WHERE status='running'",
     );

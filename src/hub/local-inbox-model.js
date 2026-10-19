@@ -6,7 +6,13 @@ export class LocalInboxModel {
     this.timeoutMs = timeoutMs;
     this.busy = false;
   }
-  async request(instruction, input, schema, timeoutMs = this.timeoutMs) {
+  async request(
+    instruction,
+    input,
+    schema,
+    timeoutMs = this.timeoutMs,
+    tokens = 450,
+  ) {
     if (this.busy) throw Error("LOCAL_MODEL_BUSY");
     this.busy = true;
     try {
@@ -21,7 +27,7 @@ export class LocalInboxModel {
           think: false,
           format: schema,
           keep_alive: "5m",
-          options: { temperature: 0, num_predict: 450, num_ctx: 8192 },
+          options: { temperature: 0, num_predict: tokens, num_ctx: 8192 },
           messages: [
             {
               role: "system",
@@ -38,7 +44,11 @@ export class LocalInboxModel {
         throw Error("LOCAL_MODEL_UNAVAILABLE");
       }
       const data = JSON.parse(await boundedResponse(response, 32000));
-      if (data.done === false || typeof data.message?.content !== "string")
+      if (
+        data.done === false ||
+        data.done_reason === "length" ||
+        typeof data.message?.content !== "string"
+      )
         throw Error("LOCAL_MODEL_INVALID_RESPONSE");
       return JSON.parse(data.message.content);
     } catch (error) {
@@ -80,27 +90,29 @@ export class LocalInboxModel {
     };
   }
   async summarize(rows) {
-    const messages = rows.slice(-20).map((r) => ({
+    const messages = rows.map((r) => ({
       sender: r.direction === "outgoing" ? "You" : r.sender_name || r.sender,
       at: r.received_at,
       subject: r.subject,
-      text: r.body.slice(0, 1400),
+      text: r.body,
       attachments: r.attachments.map((a) => ({ kind: a.kind, name: a.name })),
     }));
     const result = await this.request(
-      "Summarize only these messages in 3-5 concise bullet points. Mention explicit dates, requests and unresolved questions. Attribute statements to their sender. State when attachment contents are unavailable. Return JSON with a summary string; do not make new commitments.",
+      "Prepare a detailed, useful summary of ALL these messages. Group by conversation, topic and sender. Include decisions, requests, explicit deadlines, links/resources, pending questions and next steps. Give each substantive topic enough detail (typically 8-15 bullets for a busy batch); avoid padding a short exchange. Preserve exact dates and distinguish a sender's request from the user's commitments. State when attachment contents are unavailable. Return JSON with a summary string.",
       messages,
       {
         type: "object",
         additionalProperties: false,
         required: ["summary"],
-        properties: { summary: { type: "string", maxLength: 3000 } },
+        properties: { summary: { type: "string", maxLength: 10000 } },
       },
+      Math.max(this.timeoutMs, 180000),
+      2200,
     );
     if (
       typeof result?.summary !== "string" ||
       !result.summary.trim() ||
-      result.summary.length > 4000
+      result.summary.length > 12000
     )
       throw Error("LOCAL_MODEL_INVALID_RESPONSE");
     return {

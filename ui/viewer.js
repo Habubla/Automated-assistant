@@ -130,7 +130,11 @@ function renderList() {
     else
       tags.append(
         node("span", item.isGroup ? "Group" : "Conversation"),
-        node("span", item.message_count + " messages", "count"),
+        node(
+          "span",
+          item.unread_count + " unread · " + item.message_count + " saved",
+          "count",
+        ),
       );
     if (item.attachments.length) tags.append(node("span", "▧ Attachment"));
     main.append(tags);
@@ -314,11 +318,16 @@ async function status() {
           select.append(option);
         }
       }
-  } else
+  } else {
     $("#connection").textContent =
       "WhatsApp " +
       s.whatsapp.state.replaceAll("-", " ") +
       (s.whatsapp.warning ? " · " + s.whatsapp.warning : "");
+    $("#detail-footer").textContent =
+      "Unread tracked in June since " +
+      shortDate(s.unreadSince) +
+      " · Opening does not mark read · No WhatsApp read receipts sent";
+  }
 }
 async function refresh() {
   if (loading) return;
@@ -354,6 +363,11 @@ $("#heading").textContent = label;
 $("#section-kicker").textContent = mail ? "YOUR INBOX" : "WHATSAPP";
 document.title = "June " + label;
 $("#mail-controls").hidden = !mail;
+$("#all-unread").hidden = mail;
+$("#mark-read").hidden = mail;
+$("#summary-button").textContent = mail
+  ? "Summarize locally"
+  : "Summarize unread";
 $("#search").placeholder = mail
   ? "Search sender, subject or message"
   : "Find a person or group";
@@ -362,7 +376,7 @@ $("#empty-description").textContent = mail
   : "Choose a conversation to read its messages here.";
 $("#detail-footer").textContent = mail
   ? "Read-only mail · Opening here does not mark your original email as read · Attachments are labels only"
-  : "Read-only view · Media stays in WhatsApp · No read receipts sent";
+  : "Unread is tracked in June · Opening a chat does not mark it read · No WhatsApp read receipts sent";
 $("#other-window").textContent = mail ? "Open Messages ↗" : "Open Mail ↗";
 $("#other-window").addEventListener("click", () =>
   window.open(
@@ -439,31 +453,93 @@ $("#dismiss-summary").addEventListener(
   "click",
   () => ($("#local-summary").hidden = true),
 );
-$("#summary-button").addEventListener("click", async () => {
+let activeSummary = null;
+async function summarize(allUnread = false) {
   const id = selected,
     version = summaryVersion,
     button = $("#summary-button");
-  if (!id) return;
+  if (!id && !allUnread) return;
   button.disabled = true;
   button.textContent = "Summarizing…";
+  $("#all-unread").disabled = true;
   notify(
-    "The local 4B model is reading up to 20 messages. The first run may take a minute.",
+    "Preparing all selected unread messages in local batches. You can leave this window open while June works.",
   );
   try {
-    const result = await api(
+    let result = await api(
       "/api/inbox/summarize",
-      mail ? { id } : { threadId: id },
+      allUnread ? { allUnread: true } : mail ? { id } : { threadId: id },
     );
+    activeSummary = result.id;
+    $("#summary-read").hidden = true;
+    while (result.status === "queued" || result.status === "running") {
+      if (summaryVersion !== version) return;
+      $("#empty").hidden = true;
+      $("#opened").hidden = false;
+      $("#local-summary").hidden = false;
+      $("#summary-text").textContent =
+        result.summary || "The local model is preparing your detailed summary…";
+      notify(
+        result.messages +
+          " messages · " +
+          result.completedParts +
+          " / " +
+          result.totalParts +
+          " batches complete. New arrivals remain unread for the next summary.",
+      );
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+      result = await api(
+        "/api/inbox/summary?id=" + encodeURIComponent(result.id),
+      );
+    }
+    if (result.status === "failed")
+      throw Error(
+        (result.error || "SUMMARY_FAILED") +
+          " — completed batches are saved. Click summarize to resume.",
+      );
     if (selected === id && summaryVersion === version) {
       $("#summary-text").textContent = result.summary;
       $("#local-summary").hidden = false;
-      notify("Summary prepared locally. No Gemini request was used.");
+      $("#summary-read").hidden = mail;
+      notify(
+        "Detailed summary of " +
+          result.messages +
+          " messages prepared locally. No Gemini request was used.",
+      );
     }
   } catch (e) {
     notify(errorMessage(e));
   } finally {
     button.disabled = false;
-    button.textContent = "Summarize locally";
+    button.textContent = mail ? "Summarize locally" : "Summarize unread";
+    $("#all-unread").disabled = false;
+  }
+}
+$("#summary-button").addEventListener("click", () => summarize());
+$("#all-unread").addEventListener("click", () => summarize(true));
+$("#summary-read").addEventListener("click", async () => {
+  try {
+    await api("/api/inbox/summary-read", { id: activeSummary });
+    $("#summary-read").hidden = true;
+    await loadList();
+    notify(
+      "Summarized messages marked read in June. WhatsApp read receipts are unchanged.",
+    );
+  } catch (e) {
+    notify(errorMessage(e));
+  }
+});
+$("#mark-read").addEventListener("click", async () => {
+  try {
+    for (let i = 0; i < messages.length; i += 100)
+      await api("/api/inbox/mark-read", {
+        threadId: selected,
+        ids: messages.slice(i, i + 100).map((m) => m.id),
+      });
+    await loadList();
+    notify("Displayed messages marked read in June.");
+  } catch (e) {
+    notify(errorMessage(e));
   }
 });
 $("#classify-button").addEventListener("click", async () => {
@@ -498,4 +574,6 @@ try {
 } catch (error) {
   notify(errorMessage(error));
 }
+const requestedThread = new URLSearchParams(location.search).get("thread");
+if (requestedThread && !mail) await choose(requestedThread);
 setInterval(refresh, 12000);

@@ -21,3 +21,17 @@
 | Backups, RestoreTests and original Git metadata | Excluded entirely |
 
 The three example SQLite files contain only fictional or empty data. WhatsApp's numerous device keys are represented by a single explanatory example rather than copies of private filenames or keys. Actual contents and personal filename inventories were not exported.
+
+## New runtime examples
+
+| Private state | Fictional counterpart |
+|---|---|
+| Hub tasks table | examples/runtime/hub/tasks.example.json |
+| Hub task_notifications table | examples/runtime/hub/task-notifications.example.json |
+| Hub summaries table | examples/runtime/hub/summaries.example.json |
+| Hub opportunities table and scan state | examples/runtime/hub/opportunities.example.json |
+| Hub Gemini failed/pending requests | examples/runtime/hub/gemini-requests/request.example.json |
+| .local/runtime/widget-status.json | examples/runtime/widget-status.example.json |
+| Workflow and audit PDFs | Excluded |
+
+The table examples contain invented values; none were derived from message contents, deadlines, account identifiers or real research history.

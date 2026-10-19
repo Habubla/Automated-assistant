@@ -13,6 +13,7 @@
       ><span class="workspace">YOUR LOCAL WORKSPACE</span>
       <div class="top-actions">
         <button id="other-window" class="quiet">Open mail window ↗</button
+        ><a href="/tasks" class="quiet">Tasks & opportunities</a
         ><a href="/" class="quiet">Dashboard</a>
       </div>
     </header>
@@ -29,6 +30,7 @@
           </button>
         </div>
         <p class="connection" id="connection">Connecting…</p>
+        <button id="all-unread" class="more">Summarize all unread chats</button>
         <label class="search"
           ><span aria-hidden="true">⌕</span
           ><input
@@ -86,6 +88,8 @@
             <div class="detail-actions">
               <button id="summary-button" class="accent">
                 Summarize locally</button
+              ><button id="mark-read" class="quiet">
+                Mark displayed messages read in June</button
               ><button id="classify-button" class="quiet" hidden>
                 Sort with local AI
               </button>
@@ -97,6 +101,9 @@
               <button id="dismiss-summary" aria-label="Hide summary">×</button>
             </div>
             <p id="summary-text"></p>
+            <button id="summary-read" class="quiet" hidden>
+              Mark summarized messages read in June
+            </button>
             <small
               >Check the original messages before acting. Media contents are not
               read.</small

@@ -35,3 +35,8 @@ secrets*
 !examples/Settings/
 !examples/Settings/*
 !examples/**/*.example.sqlite
+
+# Generated documents and temporary authoring files
+*.pdf
+/output/
+/tmp/
